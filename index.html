@@ -198,17 +198,27 @@
     </div>
 
     <div>
-      <div class="section-title">Techniek &amp; Capaciteitstarief</div>
+      <div class="section-title">Techniek &amp; Aansluiting</div>
       <div class="field-grid">
         <div class="field">
           <label>Vermogen <span class="unit">kW</span></label>
           <input type="number" id="vermogen" value="120" step="10" min="20" max="400"/>
-          <div class="hint">Bepaalt capaciteitstarief</div>
+          <div class="hint">Piek = vermogen per maand</div>
         </div>
         <div class="field">
-          <label>Capaciteitstarief <span class="unit">€/kW/j</span></label>
-          <input type="number" id="captarief" value="40" step="1" min="0"/>
-          <div class="hint">Fluvius nettarief (≈ €40)</div>
+          <label>Aansluitingstype <span class="unit"></span></label>
+          <select id="aansluittype" style="width:100%;padding:5px 8px;border:1.5px solid var(--border);border-radius:6px;font-size:.8rem;color:var(--text);background:#f8fafc;outline:none;">
+            <option value="LS">LS — laagspanning</option>
+            <option value="MS">MS — middenspanning</option>
+          </select>
+          <div class="hint">Bepaalt Fluvius-tarief</div>
+        </div>
+      </div>
+      <div id="ms-extra" style="display:none;margin-top:6px">
+        <div class="field">
+          <label>Toegangsvermogen <span class="unit">kVA</span></label>
+          <input type="number" id="toegangsvermogen" value="160" step="10" min="0"/>
+          <div class="hint">Gecontracteerd aansluitvermogen</div>
         </div>
       </div>
     </div>
@@ -260,8 +270,12 @@
       <strong>Vaste aannames:</strong><br>
       · 39 kWh per laadsessie (gem. marktgemiddelde)<br>
       · € 1,00 parkeertarief per sessie<br>
-      · Capaciteitstarief = vermogen × tarief ÷ 12<br>
-      · Simulatie: 10 jaar (120 maanden)
+      · Simulatie: 10 jaar (120 maanden)<br><br>
+      <strong>Capaciteitstarief (Fluvius 2025):</strong><br>
+      <strong>LS:</strong> gem. maandpiek × €50,24/kW/j (rollend 12-mnd gem., min. €125,61/j)<br>
+      · Maandpiek = vermogen (kW) als er ≥1 sessie was<br>
+      · Piek daalt naar 0 in maanden zonder sessies<br>
+      <strong>MS:</strong> toegangsvermogen × €3,127/kVA/mnd + maandpiek × €4,593/kW/mnd + overschrijding × €4,690/kW/mnd
     </div>
 
   </aside>
@@ -324,6 +338,13 @@ const KWH_PER_SESSIE = 39;
 const PARKING        = 1.00;
 const MONTHS         = 120;
 
+// Fluvius 2025 tariffs
+const CAP_LS_PER_KW_JAAR  = 50.242015;  // €/kW/jaar, LS met piekmeting
+const CAP_LS_MIN_JAAR     = 125.61;     // minimum €/jaar
+const CAP_MS_TOEGANG      = 3.12683;    // €/kVA/maand, 1-26kV net
+const CAP_MS_PIEK         = 4.592652;   // €/kW/maand, maandpiek
+const CAP_MS_OVERSCHR     = 4.690245;   // €/kW/maand, overschrijding
+
 let view = 'annual';
 let monthly = [];
 let chartCum = null, chartRC = null;
@@ -338,32 +359,55 @@ const n1  = v => new Intl.NumberFormat('nl-BE',{minimumFractionDigits:1,maximumF
 
 function g(id){ return parseFloat(document.getElementById(id).value) || 0; }
 
-function calc(){
-  const inv    = g('investering');
-  const h1_5   = g('huur1_5');
-  const hNa5   = g('huurNa5');
-  const verm   = g('vermogen');
-  const capTar = g('captarief');
-  const kwhP   = g('kwhPrijs');
-  const aanP   = g('aankoopprijs');
-  const sess0  = g('sessies');
-  const groei  = g('groei') / 100;
-  const comm   = g('commissie') / 100;
+function calcCapaciteitstarief(verm, sess, aansluit, toegang, peakWindow) {
+  // Maandpiek = vermogen als er minstens 1 sessie was, anders 0
+  const maandpiek = sess > 0 ? verm : 0;
+  peakWindow.push(maandpiek);
+  if (peakWindow.length > 12) peakWindow.shift();
 
-  const capKostMnd = (verm * capTar) / 12;
+  const gemMaandpiek = peakWindow.reduce((a, b) => a + b, 0) / peakWindow.length;
+
+  if (aansluit === 'LS') {
+    // Laagspanning met digitale meter & piekmeting
+    const jaarKost = gemMaandpiek * CAP_LS_PER_KW_JAAR;
+    const mndKost  = Math.max(jaarKost, CAP_LS_MIN_JAAR) / 12;
+    return mndKost;
+  } else {
+    // Middenspanning 1-26 kV net
+    const toegangKost   = toegang * CAP_MS_TOEGANG;
+    const piekKost      = maandpiek * CAP_MS_PIEK;
+    const overschrijding = Math.max(0, maandpiek - toegang) * CAP_MS_OVERSCHR;
+    return toegangKost + piekKost + overschrijding;
+  }
+}
+
+function calc(){
+  const inv     = g('investering');
+  const h1_5    = g('huur1_5');
+  const hNa5    = g('huurNa5');
+  const verm    = g('vermogen');
+  const kwhP    = g('kwhPrijs');
+  const aanP    = g('aankoopprijs');
+  const sess0   = g('sessies');
+  const groei   = g('groei') / 100;
+  const comm    = g('commissie') / 100;
+  const aansluit = document.getElementById('aansluittype').value;
+  const toegang  = aansluit === 'MS' ? g('toegangsvermogen') : 0;
 
   let cum = -inv;
   monthly = [];
   let payback = null;
+  const peakWindow = [];  // rollend venster van maandpieken (max 12)
 
   for(let m = 1; m <= MONTHS; m++){
     const huur    = m <= 60 ? h1_5 : hNa5;
     const sess    = sess0 * Math.pow(1 + groei, m - 1);
     const laad    = sess * KWH_PER_SESSIE * kwhP;
     const park    = sess * PARKING;
-    const rev     = laad + park;                        // huur is een kost
+    const rev     = laad + park;
     const eCost   = sess * KWH_PER_SESSIE * aanP;
     const cCost   = laad * comm;
+    const capKostMnd = calcCapaciteitstarief(verm, sess, aansluit, toegang, peakWindow);
     const costs   = eCost + cCost + huur + capKostMnd;
     const netto   = rev - costs;
     cum          += netto;
@@ -571,6 +615,10 @@ document.addEventListener('DOMContentLoaded',()=>{
   initCharts();
   calc();
   document.querySelectorAll('input').forEach(el=>el.addEventListener('input',calc));
+  document.getElementById('aansluittype').addEventListener('change', function(){
+    document.getElementById('ms-extra').style.display = this.value === 'MS' ? 'block' : 'none';
+    calc();
+  });
 });
 </script>
 </body>
