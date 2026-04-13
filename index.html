@@ -266,6 +266,13 @@
           <div class="hint">Inkoopkost Bellade</div>
         </div>
       </div>
+      <div class="field-row full" style="margin-top:8px">
+        <div class="field">
+          <label>Opstartkost/sessie <span class="unit">€</span></label>
+          <input type="number" id="opstartkost" value="2.00" step="0.50" min="0"/>
+          <div class="hint">Vaste vergoeding per laadsessie bovenop kWh-prijs</div>
+        </div>
+      </div>
     </div>
 
     <hr class="sep"/>
@@ -421,6 +428,7 @@ function calculate() {
   const gr   = g('groei') / 100;
   const comm = g('commissie') / 100;
 
+  const opst   = g('opstartkost');
   const sessM0 = sd * DAYS_PER_MONTH; // startmaand sessies per maand
 
   let cum = -inv;
@@ -432,7 +440,8 @@ function calculate() {
     const sess     = sessM0 * Math.pow(1 + gr, m - 1);
     const laad     = sess * KWH_SESSIE * kwhP;
     const park     = sess * PARKING;
-    const rev      = laad + park;
+    const opstOmz  = sess * opst;
+    const rev      = laad + park + opstOmz;
     const eCost    = sess * KWH_SESSIE * aanP;
     const cCost    = laad * comm;
     const capCost  = calcCap(verm, sess);
@@ -440,7 +449,7 @@ function calculate() {
     const netto    = rev - costs;
     cum           += netto;
     if (payback === null && cum >= 0) payback = m;
-    monthly.push({ m, huur, sess, laad, park, rev, eCost, cCost, capCost, costs, netto, cum });
+    monthly.push({ m, huur, sess, laad, park, opstOmz, rev, eCost, cCost, capCost, costs, netto, cum });
   }
 
   // Annual aggregation
@@ -449,7 +458,8 @@ function calculate() {
     const sum = k => sl.reduce((a, r) => a + r[k], 0);
     return {
       year: y + 1, huur: sum('huur'), laad: sum('laad'), park: sum('park'),
-      rev: sum('rev'), eCost: sum('eCost'), cCost: sum('cCost'),
+      opstOmz: sum('opstOmz'), rev: sum('rev'),
+      eCost: sum('eCost'), cCost: sum('cCost'),
       capCost: sum('capCost'), costs: sum('costs'),
       netto: sum('netto'), cum: sl[11].cum,
       sessAvg: sum('sess') / 12
@@ -547,6 +557,7 @@ function renderCharts(annual) {
       labels,
       datasets: [
         { label: 'Laad-omzet',    data: annual.map(a =>  a.laad),    backgroundColor: '#00FC63', stack: 'rev' },
+        { label: 'Opstartkost',   data: annual.map(a =>  a.opstOmz), backgroundColor: '#00d4aa', stack: 'rev' },
         { label: 'Parking',       data: annual.map(a =>  a.park),    backgroundColor: '#00b847', stack: 'rev' },
         { label: 'Energiekost',   data: annual.map(a => -a.eCost),   backgroundColor: '#ff6b6b', stack: 'cost' },
         { label: 'Commissie',     data: annual.map(a => -a.cCost),   backgroundColor: '#ff9944', stack: 'cost' },
@@ -574,7 +585,7 @@ function renderTable(annual) {
   if (view === 'annual') {
     thead.innerHTML = `<tr>
       <th style="text-align:left">Jaar</th>
-      <th>Sess./dag</th><th>Laad-omzet</th><th>Parking</th>
+      <th>Sess./dag</th><th>Laad-omzet</th><th>Opstartkost</th><th>Parking</th>
       <th>Totaal omzet</th><th>Energiekost</th><th>Commissie</th>
       <th>Huurkost</th><th>Capaciteitst.</th><th>Totaal kost</th>
       <th>Netto CF</th><th>Cumulatief</th>
@@ -584,7 +595,7 @@ function renderTable(annual) {
       return `<tr>
         <td>Jaar ${a.year}${a.year<=5?' <span style="color:#4488ff;font-size:.65rem">h1-5</span>':' <span style="color:#555;font-size:.65rem">hNa5</span>'}</td>
         <td>${fmtN1(sessPerDag)}</td>
-        <td>${fmtEur(a.laad)}</td><td>${fmtEur(a.park)}</td>
+        <td>${fmtEur(a.laad)}</td><td>${fmtEur(a.opstOmz)}</td><td>${fmtEur(a.park)}</td>
         <td><strong style="color:#F0F0F0">${fmtEur(a.rev)}</strong></td>
         <td class="neg">−${fmtEur(a.eCost)}</td>
         <td class="neg">−${fmtEur(a.cCost)}</td>
@@ -598,7 +609,7 @@ function renderTable(annual) {
     const t = k => annual.reduce((s, a) => s + a[k], 0);
     tfoot.innerHTML = `<tr>
       <td>TOTAAL 10j</td><td></td>
-      <td>${fmtEur(t('laad'))}</td><td>${fmtEur(t('park'))}</td>
+      <td>${fmtEur(t('laad'))}</td><td>${fmtEur(t('opstOmz'))}</td><td>${fmtEur(t('park'))}</td>
       <td>${fmtEur(t('rev'))}</td>
       <td>−${fmtEur(t('eCost'))}</td><td>−${fmtEur(t('cCost'))}</td>
       <td>−${fmtEur(t('huur'))}</td><td>−${fmtEur(t('capCost'))}</td>
@@ -609,7 +620,7 @@ function renderTable(annual) {
   } else {
     thead.innerHTML = `<tr>
       <th style="text-align:left">Maand</th>
-      <th>Sess./dag</th><th>Laad-omzet</th><th>Parking</th>
+      <th>Sess./dag</th><th>Laad-omzet</th><th>Opstartkost</th><th>Parking</th>
       <th>Energiekost</th><th>Commissie</th><th>Huurkost</th>
       <th>Capaciteitst.</th><th>Netto CF</th><th>Cumulatief</th>
     </tr>`;
@@ -618,7 +629,7 @@ function renderTable(annual) {
       return `<tr>
         <td>M${r.m} (J${Math.ceil(r.m/12)})</td>
         <td>${fmtN1(spd)}</td>
-        <td>${fmtEur(r.laad)}</td><td>${fmtEur(r.park)}</td>
+        <td>${fmtEur(r.laad)}</td><td>${fmtEur(r.opstOmz)}</td><td>${fmtEur(r.park)}</td>
         <td class="neg">−${fmtEur(r.eCost)}</td>
         <td class="neg">−${fmtEur(r.cCost)}</td>
         <td class="neg">−${fmtEur(r.huur)}</td>
@@ -640,7 +651,8 @@ function switchView(v) {
     const sl = monthly.slice(y * 12, (y + 1) * 12);
     const sum = k => sl.reduce((a, r) => a + r[k], 0);
     return { year:y+1, huur:sum('huur'), laad:sum('laad'), park:sum('park'),
-      rev:sum('rev'), eCost:sum('eCost'), cCost:sum('cCost'),
+      opstOmz:sum('opstOmz'), rev:sum('rev'),
+      eCost:sum('eCost'), cCost:sum('cCost'),
       capCost:sum('capCost'), costs:sum('costs'),
       netto:sum('netto'), cum:sl[11].cum, sessAvg:sum('sess')/12 };
   });
