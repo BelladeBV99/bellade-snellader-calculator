@@ -5,174 +5,212 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Snellader Rendabiliteit — Bellade Capital</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
   <style>
-    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-    :root{
-      --navy:#0f2240;--navy2:#1a3a5c;--navy3:#234e72;
-      --green:#27ae60;--red:#e74c3c;--amber:#f39c12;--blue:#3498db;
-      --bg:#eef2f7;--card:#fff;--border:#d1dce8;
-      --text:#1a2e44;--muted:#607d9a;
-    }
-    html,body{height:100%;font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);font-size:13px}
+    *{box-sizing:border-box;margin:0;padding:0;font-family:'Inter',sans-serif}
+    html{scroll-behavior:smooth}
+    body{background:#0A0A0A;color:#F0F0F0;min-height:100vh}
 
-    /* HEADER */
-    header{
-      background:linear-gradient(135deg,var(--navy) 0%,var(--navy3) 100%);
-      color:#fff;padding:10px 20px;display:flex;align-items:center;gap:12px;
-      box-shadow:0 2px 8px rgba(0,0,0,.2);height:50px;
-    }
-    .logo{width:32px;height:32px;background:#fff;border-radius:6px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:13px;color:var(--navy);letter-spacing:-1px;flex-shrink:0}
-    header h1{font-size:1rem;font-weight:700;letter-spacing:-.2px}
-    header p{font-size:.72rem;color:rgba(255,255,255,.65);margin-top:1px}
-    header .badge{margin-left:auto;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:20px;padding:3px 10px;font-size:.68rem;color:rgba(255,255,255,.75);white-space:nowrap}
+    ::-webkit-scrollbar{width:5px;height:5px}
+    ::-webkit-scrollbar-track{background:#0A0A0A}
+    ::-webkit-scrollbar-thumb{background:#00FC63;border-radius:3px}
 
-    /* MAIN LAYOUT */
-    .app{
+    /* NAV */
+    nav{
+      position:sticky;top:0;z-index:100;
+      background:rgba(10,10,10,.95);backdrop-filter:blur(20px);
+      border-bottom:1px solid #1F1F1F;
+      padding:0 24px;height:56px;
+      display:flex;align-items:center;justify-content:space-between;
+    }
+    .nav-brand{display:flex;align-items:center;gap:12px}
+    .nav-logo{
+      width:34px;height:34px;background:#00FC63;border-radius:8px;
+      display:flex;align-items:center;justify-content:center;
+      font-weight:900;font-size:13px;color:#000;letter-spacing:-1px;flex-shrink:0;
+    }
+    .nav-title{font-size:.95rem;font-weight:700;color:#F0F0F0}
+    .nav-sub{font-size:.72rem;color:#888;margin-top:1px}
+    .nav-badge{
+      background:rgba(0,252,99,.1);color:#00FC63;
+      border:1px solid rgba(0,252,99,.25);border-radius:20px;
+      padding:4px 12px;font-size:.72rem;font-weight:600;
+    }
+
+    /* LAYOUT */
+    .layout{
       display:grid;
-      grid-template-columns:290px 1fr;
-      height:calc(100vh - 50px);
-      gap:0;
+      grid-template-columns:300px 1fr;
+      min-height:calc(100vh - 56px);
     }
 
     /* SIDEBAR */
     .sidebar{
-      background:var(--card);
-      border-right:1px solid var(--border);
+      border-right:1px solid #1F1F1F;
+      padding:20px 16px;
       overflow-y:auto;
-      padding:12px 14px;
-      display:flex;flex-direction:column;gap:8px;
+      display:flex;flex-direction:column;gap:16px;
+      background:#0D0D0D;
     }
-    .sidebar::-webkit-scrollbar{width:4px}
-    .sidebar::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
 
-    .section-title{
-      font-size:.62rem;font-weight:800;text-transform:uppercase;letter-spacing:.9px;
-      color:var(--muted);margin-bottom:6px;padding-bottom:5px;border-bottom:1px solid var(--border);
+    .section-label{
+      font-size:.65rem;font-weight:700;letter-spacing:.12em;
+      text-transform:uppercase;color:#00FC63;margin-bottom:10px;
     }
-    .field-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
-    .field-grid.single{grid-template-columns:1fr}
-    .field{display:flex;flex-direction:column;gap:3px}
-    .field label{font-size:.72rem;font-weight:600;color:var(--text);display:flex;justify-content:space-between;align-items:center}
-    .field label .unit{font-weight:400;color:var(--muted);font-size:.68rem}
-    .field .hint{font-size:.65rem;color:var(--muted);line-height:1.3}
-    input[type=number]{
-      width:100%;padding:5px 8px;border:1.5px solid var(--border);border-radius:6px;
-      font-size:.8rem;color:var(--text);background:#f8fafc;outline:none;
-      transition:border-color .12s;
+    .field-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+    .field-row.full{grid-template-columns:1fr}
+    .field{display:flex;flex-direction:column;gap:4px}
+    .field label{
+      font-size:.65rem;font-weight:600;color:#888;
+      text-transform:uppercase;letter-spacing:.06em;
+      display:flex;justify-content:space-between;align-items:center;
     }
-    input[type=number]:focus{border-color:var(--blue);background:#fff}
+    .field label .unit{font-weight:500;color:#555;text-transform:none;letter-spacing:0}
+    .field .hint{font-size:.63rem;color:#555;line-height:1.4;margin-top:1px}
+    input[type=number],select{
+      background:#1A1A1A;border:1px solid #2A2A2A;color:#F0F0F0;
+      border-radius:8px;padding:8px 10px;width:100%;font-size:.85rem;
+      outline:none;transition:border-color .15s;
+      -moz-appearance:textfield;
+    }
+    input[type=number]::-webkit-outer-spin-button,
+    input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
+    input[type=number]:focus,select:focus{border-color:#00FC63}
 
-    .note{
-      background:#eff6ff;border:1px solid #bfdbfe;border-radius:7px;
-      padding:8px 10px;font-size:.68rem;color:#1e40af;line-height:1.6;
+    .note-box{
+      background:rgba(0,252,99,.04);border:1px solid rgba(0,252,99,.15);
+      border-radius:10px;padding:12px 14px;
+      font-size:.68rem;color:#888;line-height:1.7;
     }
-    .note strong{font-weight:700}
+    .note-box strong{color:#00FC63;font-weight:600}
+
+    .calc-btn{
+      background:#00FC63;color:#000;font-weight:800;
+      border:none;border-radius:10px;padding:12px;
+      font-size:.9rem;cursor:pointer;width:100%;
+      transition:all .2s;letter-spacing:-.2px;
+    }
+    .calc-btn:hover{background:#33fd7f;transform:translateY(-1px);box-shadow:0 4px 20px rgba(0,252,99,.3)}
+    .calc-btn:active{transform:translateY(0)}
 
     /* RESULTS */
     .results{
-      overflow-y:auto;
-      padding:12px 14px;
-      display:flex;flex-direction:column;gap:10px;
+      padding:20px;overflow-y:auto;
+      display:flex;flex-direction:column;gap:16px;
     }
-    .results::-webkit-scrollbar{width:4px}
-    .results::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
 
-    /* KPI GRID */
-    .kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
-    .kpi{
-      background:var(--card);border:1px solid var(--border);border-radius:10px;
-      padding:10px 12px;position:relative;overflow:hidden;
+    /* KPI CARDS */
+    .kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+    .kpi-card{
+      background:#111111;border:1px solid #1F1F1F;border-radius:14px;
+      padding:16px;position:relative;overflow:hidden;
     }
-    .kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:10px 10px 0 0}
-    .kpi.green::before{background:var(--green)}
-    .kpi.blue::before{background:var(--blue)}
-    .kpi.amber::before{background:var(--amber)}
-    .kpi.red::before{background:var(--red)}
-    .kpi-label{font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-bottom:4px}
-    .kpi-value{font-size:1.25rem;font-weight:800;letter-spacing:-.5px;line-height:1}
-    .kpi.green .kpi-value{color:var(--green)}
-    .kpi.blue  .kpi-value{color:var(--blue)}
-    .kpi.amber .kpi-value{color:var(--amber)}
-    .kpi.red   .kpi-value{color:var(--red)}
-    .kpi-sub{font-size:.64rem;color:var(--muted);margin-top:3px}
+    .kpi-card.active{border-color:rgba(0,252,99,.3);background:rgba(0,252,99,.04)}
+    .kpi-card.warn{border-color:rgba(255,165,0,.25);background:rgba(255,165,0,.04)}
+    .kpi-card.danger{border-color:rgba(255,107,107,.25);background:rgba(255,107,107,.04)}
+    .kpi-label{font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#666;margin-bottom:8px}
+    .kpi-val{font-size:1.6rem;font-weight:800;line-height:1;letter-spacing:-.5px;color:#00FC63}
+    .kpi-card.warn  .kpi-val{color:#FFA500}
+    .kpi-card.danger .kpi-val{color:#ff6b6b}
+    .kpi-sub{font-size:.65rem;color:#555;margin-top:5px}
 
-    /* CHART ROW */
-    .chart-row{display:grid;grid-template-columns:1.4fr 1fr;gap:10px}
-    .chart-box{
-      background:var(--card);border:1px solid var(--border);border-radius:10px;
-      padding:12px 14px;
+    /* CHARTS */
+    .chart-grid{display:grid;grid-template-columns:1.5fr 1fr;gap:12px}
+    .chart-card{
+      background:#111111;border:1px solid #1F1F1F;border-radius:14px;
+      padding:18px;
     }
-    .chart-title{font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-bottom:8px}
-    .chart-box canvas{max-height:180px}
+    .chart-label{font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#666;margin-bottom:14px}
+    .chart-card canvas{max-height:200px}
 
     /* TABLE */
-    .table-wrap{background:var(--card);border:1px solid var(--border);border-radius:10px;overflow:hidden}
-    .table-header{
-      padding:8px 14px;display:flex;align-items:center;justify-content:space-between;
-      border-bottom:1px solid var(--border);background:#f8fafc;
+    .table-card{
+      background:#111111;border:1px solid #1F1F1F;border-radius:14px;
+      overflow:hidden;
     }
-    .table-header h3{font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted)}
-    .toggle-btns{display:flex;gap:4px}
-    .toggle-btns button{
-      padding:3px 10px;border-radius:5px;border:1.5px solid var(--border);
-      background:#fff;font-size:.68rem;font-weight:600;cursor:pointer;color:var(--muted);transition:all .12s;
+    .table-top{
+      padding:12px 16px;display:flex;align-items:center;justify-content:space-between;
+      border-bottom:1px solid #1F1F1F;
     }
-    .toggle-btns button.active{background:var(--navy);border-color:var(--navy);color:#fff}
-    .tscroll{overflow-x:auto;max-height:220px;overflow-y:auto}
-    .tscroll::-webkit-scrollbar{height:4px;width:4px}
-    .tscroll::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
-    table{width:100%;border-collapse:collapse;font-size:.72rem}
+    .table-top h3{font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#666}
+    .toggle-wrap{display:flex;gap:4px}
+    .toggle-btn{
+      padding:4px 12px;border-radius:6px;
+      border:1px solid #2A2A2A;background:transparent;
+      font-size:.7rem;font-weight:600;cursor:pointer;color:#666;
+      transition:all .15s;
+    }
+    .toggle-btn.active{background:#00FC63;border-color:#00FC63;color:#000}
+    .tscroll{overflow-x:auto;max-height:240px;overflow-y:auto}
+    table{width:100%;border-collapse:collapse;font-size:.75rem}
     thead th{
-      background:#f8fafc;padding:6px 10px;text-align:right;font-weight:700;
-      color:var(--muted);font-size:.62rem;text-transform:uppercase;letter-spacing:.3px;
-      border-bottom:1px solid var(--border);white-space:nowrap;position:sticky;top:0;z-index:1;
+      background:#0D0D0D;padding:8px 12px;text-align:right;
+      font-size:.62rem;font-weight:600;color:#555;text-transform:uppercase;letter-spacing:.05em;
+      border-bottom:1px solid #1F1F1F;white-space:nowrap;
+      position:sticky;top:0;z-index:1;
     }
     thead th:first-child{text-align:left}
-    tbody tr{border-bottom:1px solid #eef2f7}
+    tbody tr{border-bottom:1px solid #161616;transition:background .1s}
+    tbody tr:hover{background:rgba(255,255,255,.02)}
     tbody tr:last-child{border-bottom:none}
-    tbody tr:hover{background:#f8fafc}
-    tbody td{padding:6px 10px;text-align:right;white-space:nowrap}
-    tbody td:first-child{text-align:left;font-weight:600}
-    .pos{color:var(--green);font-weight:700}
-    .neg{color:var(--red)}
-    .cum-pos{color:var(--green);font-weight:700}
-    .cum-neg{color:var(--red);font-weight:700}
-    tfoot td{padding:6px 10px;text-align:right;font-weight:700;background:#f0f4f8;font-size:.72rem;border-top:2px solid var(--border)}
+    tbody td{padding:8px 12px;text-align:right;white-space:nowrap;color:#CCC}
+    tbody td:first-child{text-align:left;font-weight:600;color:#F0F0F0}
+    tfoot td{padding:8px 12px;text-align:right;font-weight:700;background:#0D0D0D;
+      border-top:1px solid #2A2A2A;font-size:.75rem;color:#F0F0F0}
     tfoot td:first-child{text-align:left}
+    .pos{color:#00FC63 !important;font-weight:700}
+    .neg{color:#ff6b6b !important}
+    .cum-pos{color:#00FC63 !important;font-weight:700}
+    .cum-neg{color:#ff6b6b !important;font-weight:700}
+
+    /* EMPTY STATE */
+    .empty-state{
+      display:flex;flex-direction:column;align-items:center;justify-content:center;
+      height:100%;min-height:400px;gap:12px;color:#333;
+    }
+    .empty-icon{font-size:3rem}
+    .empty-title{font-size:1rem;font-weight:600;color:#444}
+    .empty-sub{font-size:.8rem;color:#333;text-align:center;max-width:300px;line-height:1.6}
+
+    /* SEPARATOR */
+    .sep{height:1px;background:#1F1F1F;border:none}
 
     /* MOBILE */
-    @media(max-width:768px){
-      .app{grid-template-columns:1fr;height:auto}
-      .sidebar{border-right:none;border-bottom:1px solid var(--border);height:auto;overflow:visible}
-      .results{height:auto}
+    @media(max-width:900px){
+      .layout{grid-template-columns:1fr}
+      .sidebar{border-right:none;border-bottom:1px solid #1F1F1F}
       .kpi-grid{grid-template-columns:repeat(2,1fr)}
-      .chart-row{grid-template-columns:1fr}
-      html,body{height:auto}
+      .chart-grid{grid-template-columns:1fr}
     }
     @media(max-width:480px){
-      .kpi-grid{grid-template-columns:repeat(2,1fr)}
-      .field-grid{grid-template-columns:1fr}
+      .kpi-grid{grid-template-columns:1fr 1fr}
+      nav{padding:0 16px}
+      .results,.sidebar{padding:16px 12px}
     }
   </style>
 </head>
 <body>
-<header>
-  <div class="logo">BC</div>
-  <div>
-    <h1>Snellader Rendabiliteitsberekening</h1>
-    <p>Bellade Capital — CPO Investeringsanalyse</p>
+
+<nav>
+  <div class="nav-brand">
+    <div class="nav-logo">BC</div>
+    <div>
+      <div class="nav-title">Snellader Rendabiliteitsberekening</div>
+      <div class="nav-sub">Bellade Capital — CPO Investeringsanalyse</div>
+    </div>
   </div>
-  <div class="badge">Intern gebruik</div>
-</header>
+  <div class="nav-badge">Intern gebruik</div>
+</nav>
 
-<div class="app">
+<div class="layout">
 
-  <!-- SIDEBAR INPUTS -->
+  <!-- SIDEBAR -->
   <aside class="sidebar">
 
     <div>
-      <div class="section-title">Investering</div>
-      <div class="field-grid single">
+      <div class="section-label">Investering</div>
+      <div class="field-row full">
         <div class="field">
           <label>Investeringskost <span class="unit">€</span></label>
           <input type="number" id="investering" value="45000" step="500" min="0"/>
@@ -181,36 +219,42 @@
       </div>
     </div>
 
+    <hr class="sep"/>
+
     <div>
-      <div class="section-title">Huurkost locatie</div>
-      <div class="field-grid">
+      <div class="section-label">Huurkost locatie</div>
+      <div class="field-row">
         <div class="field">
-          <label>Huur jaar 1–5 <span class="unit">€/mnd</span></label>
+          <label>Jaar 1–5 <span class="unit">€/mnd</span></label>
           <input type="number" id="huur1_5" value="500" step="25" min="0"/>
           <div class="hint">Kost aan locatie-eigenaar</div>
         </div>
         <div class="field">
-          <label>Huur na 5 jaar <span class="unit">€/mnd</span></label>
+          <label>Na 5 jaar <span class="unit">€/mnd</span></label>
           <input type="number" id="huurNa5" value="300" step="25" min="0"/>
           <div class="hint">Verlengde periode</div>
         </div>
       </div>
     </div>
 
+    <hr class="sep"/>
+
     <div>
-      <div class="section-title">Techniek</div>
-      <div class="field-grid single">
+      <div class="section-label">Techniek</div>
+      <div class="field-row full">
         <div class="field">
           <label>Vermogen <span class="unit">kW</span></label>
           <input type="number" id="vermogen" value="120" step="10" min="20" max="400"/>
-          <div class="hint">Capaciteitskost = vermogen × €4,1625/mnd (afgevlakt bij &gt; €0,45/kWh gecombineerd)</div>
+          <div class="hint">Capaciteitskost = vermogen × €4,1625/mnd (max €0,35/kWh)</div>
         </div>
       </div>
     </div>
 
+    <hr class="sep"/>
+
     <div>
-      <div class="section-title">Energie</div>
-      <div class="field-grid">
+      <div class="section-label">Energie</div>
+      <div class="field-row">
         <div class="field">
           <label>Verkoopprijs <span class="unit">€/kWh</span></label>
           <input type="number" id="kwhPrijs" value="0.59" step="0.01" min="0"/>
@@ -224,25 +268,29 @@
       </div>
     </div>
 
+    <hr class="sep"/>
+
     <div>
-      <div class="section-title">Gebruik &amp; Groei</div>
-      <div class="field-grid">
+      <div class="section-label">Gebruik &amp; Groei</div>
+      <div class="field-row">
         <div class="field">
-          <label>Sessies/mnd <span class="unit">#</span></label>
-          <input type="number" id="sessies" value="45" step="5" min="1"/>
-          <div class="hint">Startmaand</div>
+          <label>Sessies/dag <span class="unit">#</span></label>
+          <input type="number" id="sessies" value="1.5" step="0.5" min="0.1"/>
+          <div class="hint">Gemiddeld per dag (×30,44 = /mnd)</div>
         </div>
         <div class="field">
           <label>Groei/mnd <span class="unit">%</span></label>
           <input type="number" id="groei" value="2" step="0.5" min="0" max="20"/>
-          <div class="hint">Maandelijkse groei</div>
+          <div class="hint">Maandelijkse groei sessies</div>
         </div>
       </div>
     </div>
 
+    <hr class="sep"/>
+
     <div>
-      <div class="section-title">Commissie</div>
-      <div class="field-grid single">
+      <div class="section-label">Commissie</div>
+      <div class="field-row full">
         <div class="field">
           <label>Commissie locatie <span class="unit">%</span></label>
           <input type="number" id="commissie" value="10" step="1" min="0" max="100"/>
@@ -251,337 +299,356 @@
       </div>
     </div>
 
-    <div class="note">
-      <strong>Vaste aannames:</strong><br>
-      · 39 kWh per laadsessie (gem. marktgemiddelde)<br>
-      · € 1,00 parkeertarief per sessie<br>
-      · Simulatie: 10 jaar (120 maanden)<br><br>
-      <strong>Capaciteitstarief (Fluvius 2025):</strong><br>
-      · Basiskost = vermogen × €4,1625/kW/mnd<br>
-      · Afvlakking: capaciteitstarief alleen is begrensd op €0,35/kWh — bij weinig sessies wordt het plafond actief
+    <hr class="sep"/>
+
+    <div class="note-box">
+      <strong>Vaste aannames</strong><br>
+      · 39 kWh per sessie · €1,00 parkeren/sessie<br>
+      · 10 jaar simulatie (120 maanden)<br><br>
+      <strong>Capaciteitstarief Fluvius 2025</strong><br>
+      · Vermogen × €4,1625/kW/mnd<br>
+      · Plafond: max €0,35/kWh (capaciteit alleen)
     </div>
+
+    <button class="calc-btn" onclick="calculate()">▶ Start Calculatie</button>
 
   </aside>
 
-  <!-- RESULTS PANEL -->
-  <div class="results">
-
-    <div class="kpi-grid">
-      <div class="kpi green" id="card-payback">
-        <div class="kpi-label">Terugverdientijd</div>
-        <div class="kpi-value" id="kpi-payback">—</div>
-        <div class="kpi-sub" id="kpi-payback-sub">—</div>
-      </div>
-      <div class="kpi blue" id="card-m1">
-        <div class="kpi-label">Netto maand 1</div>
-        <div class="kpi-value" id="kpi-m1">—</div>
-        <div class="kpi-sub">cashflow startmaand</div>
-      </div>
-      <div class="kpi amber" id="card-roi5">
-        <div class="kpi-label">Resultaat jaar 5</div>
-        <div class="kpi-value" id="kpi-roi5">—</div>
-        <div class="kpi-sub" id="kpi-cum5">—</div>
-      </div>
-      <div class="kpi green" id="card-roi10">
-        <div class="kpi-label">Resultaat jaar 10</div>
-        <div class="kpi-value" id="kpi-roi10">—</div>
-        <div class="kpi-sub" id="kpi-cum10">—</div>
-      </div>
+  <!-- RESULTS -->
+  <main class="results" id="results-panel">
+    <div class="empty-state" id="empty-state">
+      <div class="empty-icon">⚡</div>
+      <div class="empty-title">Vul de parameters in</div>
+      <div class="empty-sub">Pas de waarden links aan en klik op <strong style="color:#00FC63">Start Calculatie</strong> om de rendabiliteitsberekening te starten.</div>
     </div>
 
-    <div class="chart-row">
-      <div class="chart-box">
-        <div class="chart-title">Cumulatief cashflow — 10 jaar</div>
-        <canvas id="chartCum"></canvas>
-      </div>
-      <div class="chart-box">
-        <div class="chart-title">Jaarlijkse opbrengst vs kosten</div>
-        <canvas id="chartRC"></canvas>
-      </div>
-    </div>
+    <div id="output" style="display:none;display:flex;flex-direction:column;gap:16px">
 
-    <div class="table-wrap">
-      <div class="table-header">
-        <h3>Jaardetail</h3>
-        <div class="toggle-btns">
-          <button class="active" id="btn-yr" onclick="switchView('annual')">Per jaar</button>
-          <button id="btn-mo" onclick="switchView('monthly')">Per maand</button>
+      <div class="kpi-grid">
+        <div class="kpi-card" id="card-payback">
+          <div class="kpi-label">Terugverdientijd</div>
+          <div class="kpi-val" id="kpi-payback">—</div>
+          <div class="kpi-sub" id="kpi-payback-sub">—</div>
+        </div>
+        <div class="kpi-card" id="card-m1">
+          <div class="kpi-label">Netto maand 1</div>
+          <div class="kpi-val" id="kpi-m1">—</div>
+          <div class="kpi-sub">cashflow startmaand</div>
+        </div>
+        <div class="kpi-card" id="card-roi5">
+          <div class="kpi-label">Resultaat jaar 5</div>
+          <div class="kpi-val" id="kpi-roi5">—</div>
+          <div class="kpi-sub" id="kpi-cum5">—</div>
+        </div>
+        <div class="kpi-card" id="card-roi10">
+          <div class="kpi-label">Resultaat jaar 10</div>
+          <div class="kpi-val" id="kpi-roi10">—</div>
+          <div class="kpi-sub" id="kpi-cum10">—</div>
         </div>
       </div>
-      <div class="tscroll">
-        <table><thead id="thead"></thead><tbody id="tbody"></tbody><tfoot id="tfoot"></tfoot></table>
-      </div>
-    </div>
 
-  </div>
+      <div class="chart-grid">
+        <div class="chart-card">
+          <div class="chart-label">Cumulatief cashflow — 10 jaar</div>
+          <canvas id="chartCum"></canvas>
+        </div>
+        <div class="chart-card">
+          <div class="chart-label">Jaarlijkse opbrengst vs kosten</div>
+          <canvas id="chartRC"></canvas>
+        </div>
+      </div>
+
+      <div class="table-card">
+        <div class="table-top">
+          <h3>Detailberekening</h3>
+          <div class="toggle-wrap">
+            <button class="toggle-btn active" id="btn-yr" onclick="switchView('annual')">Per jaar</button>
+            <button class="toggle-btn" id="btn-mo" onclick="switchView('monthly')">Per maand</button>
+          </div>
+        </div>
+        <div class="tscroll">
+          <table><thead id="thead"></thead><tbody id="tbody"></tbody><tfoot id="tfoot"></tfoot></table>
+        </div>
+      </div>
+
+    </div>
+  </main>
 </div>
 
 <script>
-const KWH_PER_SESSIE = 39;
+// ── CONSTANTS ──
+const KWH_SESSIE     = 39;
 const PARKING        = 1.00;
+const DAYS_PER_MONTH = 30.44;
 const MONTHS         = 120;
+const CAP_PER_KW_MND = 4.1625;
+const CAP_MAX_KWH    = 0.35;
 
-// Fluvius 2025 — laagspanning met piekmeting
-const CAP_PER_KW_MND  = 4.1625;   // €/kW/maand
-const CAP_MAX_PER_KWH = 0.35;     // plafond capaciteitstarief alleen (€/kWh)
-
-let view = 'annual';
+let view    = 'annual';
 let monthly = [];
 let chartCum = null, chartRC = null;
+let chartsReady = false;
 
-const € = v => {
-  const abs = Math.abs(Math.round(v));
-  const s = new Intl.NumberFormat('nl-BE').format(abs);
-  return (v < 0 ? '−' : '') + '€\u00a0' + s;
+// ── FORMATTERS ──
+const fmtNum = (v, dec=0) => new Intl.NumberFormat('nl-BE',{minimumFractionDigits:dec,maximumFractionDigits:dec}).format(v);
+const fmtEur = v => {
+  const sign = v < 0 ? '−' : '';
+  return sign + '€\u00a0' + fmtNum(Math.abs(Math.round(v)));
 };
-const pct = v => (v >= 0 ? '+' : '') + v.toFixed(1) + '\u00a0%';
-const n1  = v => new Intl.NumberFormat('nl-BE',{minimumFractionDigits:1,maximumFractionDigits:1}).format(v);
-
+const fmtPct = v => (v >= 0 ? '+' : '') + fmtNum(v, 1) + '\u00a0%';
+const fmtN1  = v => fmtNum(v, 1);
 function g(id){ return parseFloat(document.getElementById(id).value) || 0; }
 
-function calcCapaciteitstarief(verm, sess) {
-  // Basiskost: vermogen × €4,1625/kW/maand
+// ── CAPACITEITSTARIEF ──
+function calcCap(verm, sess) {
   const capBase = verm * CAP_PER_KW_MND;
-
-  // Afvlakking: capaciteitstarief alleen mag max €0,35/kWh bedragen
-  const kwhMnd = sess * KWH_PER_SESSIE;
-  if (kwhMnd > 0 && capBase / kwhMnd > CAP_MAX_PER_KWH) {
-    return CAP_MAX_PER_KWH * kwhMnd;
+  const kwhMnd  = sess * KWH_SESSIE;
+  if (kwhMnd > 0 && (capBase / kwhMnd) > CAP_MAX_KWH) {
+    return CAP_MAX_KWH * kwhMnd;
   }
   return capBase;
 }
 
-function calc(){
-  const inv     = g('investering');
-  const h1_5    = g('huur1_5');
-  const hNa5    = g('huurNa5');
-  const verm    = g('vermogen');
-  const kwhP    = g('kwhPrijs');
-  const aanP    = g('aankoopprijs');
-  const sess0   = g('sessies');
-  const groei   = g('groei') / 100;
-  const comm    = g('commissie') / 100;
+// ── MAIN CALCULATION ──
+function calculate() {
+  const inv  = g('investering');
+  const h1_5 = g('huur1_5');
+  const hNa5 = g('huurNa5');
+  const verm = g('vermogen');
+  const kwhP = g('kwhPrijs');
+  const aanP = g('aankoopprijs');
+  const sd   = g('sessies');          // sessies per dag
+  const gr   = g('groei') / 100;
+  const comm = g('commissie') / 100;
+
+  const sessM0 = sd * DAYS_PER_MONTH; // startmaand sessies per maand
+
   let cum = -inv;
   monthly = [];
   let payback = null;
 
-  for(let m = 1; m <= MONTHS; m++){
-    const huur    = m <= 60 ? h1_5 : hNa5;
-    const sess    = sess0 * Math.pow(1 + groei, m - 1);
-    const laad    = sess * KWH_PER_SESSIE * kwhP;
-    const park    = sess * PARKING;
-    const rev     = laad + park;
-    const eCost   = sess * KWH_PER_SESSIE * aanP;
-    const cCost   = laad * comm;
-    const capKostMnd = calcCapaciteitstarief(verm, sess);
-    const costs   = eCost + cCost + huur + capKostMnd;
-    const netto   = rev - costs;
-    cum          += netto;
-    if(payback === null && cum >= 0) payback = m;
-    monthly.push({m, huur, sess, laad, park, rev, eCost, cCost, capKostMnd, costs, netto, cum});
+  for (let m = 1; m <= MONTHS; m++) {
+    const huur     = m <= 60 ? h1_5 : hNa5;
+    const sess     = sessM0 * Math.pow(1 + gr, m - 1);
+    const laad     = sess * KWH_SESSIE * kwhP;
+    const park     = sess * PARKING;
+    const rev      = laad + park;
+    const eCost    = sess * KWH_SESSIE * aanP;
+    const cCost    = laad * comm;
+    const capCost  = calcCap(verm, sess);
+    const costs    = eCost + cCost + huur + capCost;
+    const netto    = rev - costs;
+    cum           += netto;
+    if (payback === null && cum >= 0) payback = m;
+    monthly.push({ m, huur, sess, laad, park, rev, eCost, cCost, capCost, costs, netto, cum });
   }
 
-  // KPIs
+  // Annual aggregation
+  const annual = Array.from({ length: 10 }, (_, y) => {
+    const sl  = monthly.slice(y * 12, (y + 1) * 12);
+    const sum = k => sl.reduce((a, r) => a + r[k], 0);
+    return {
+      year: y + 1, huur: sum('huur'), laad: sum('laad'), park: sum('park'),
+      rev: sum('rev'), eCost: sum('eCost'), cCost: sum('cCost'),
+      capCost: sum('capCost'), costs: sum('costs'),
+      netto: sum('netto'), cum: sl[11].cum,
+      sessAvg: sum('sess') / 12
+    };
+  });
+
+  updateKPIs(annual, inv, payback);
+  renderCharts(annual);
+  renderTable(annual);
+
+  // Show output
+  document.getElementById('empty-state').style.display = 'none';
+  document.getElementById('output').style.display = 'flex';
+}
+
+// ── KPIs ──
+function updateKPIs(annual, inv, payback) {
   const m1   = monthly[0];
   const c60  = monthly[59].cum;
   const c120 = monthly[119].cum;
-  const roi5  = (c60  / inv) * 100;
-  const roi10 = (c120 / inv) * 100;
+  const roi5  = inv > 0 ? (c60  / inv) * 100 : 0;
+  const roi10 = inv > 0 ? (c120 / inv) * 100 : 0;
 
-  const setKpi = (id, val) => document.getElementById(id).textContent = val;
-  setKpi('kpi-m1',  €(m1.netto));
-  setKpi('kpi-roi5',  pct(roi5));
-  setKpi('kpi-roi10', pct(roi10));
-  setKpi('kpi-cum5',  €(c60)  + ' cumulatief');
-  setKpi('kpi-cum10', €(c120) + ' cumulatief');
-
-  if(payback){
-    const yr = Math.floor(payback/12), mo = payback % 12;
-    setKpi('kpi-payback', yr > 0 ? `${yr}j\u00a0${mo}m` : `${payback}\u00a0mnd`);
-    setKpi('kpi-payback-sub', `na ${payback} maanden`);
+  // Payback
+  if (payback) {
+    const yr = Math.floor(payback / 12), mo = payback % 12;
+    document.getElementById('kpi-payback').textContent = yr > 0 ? `${yr}j\u00a0${mo}m` : `${payback}\u00a0mnd`;
+    document.getElementById('kpi-payback-sub').textContent = `na ${payback} maanden`;
+    document.getElementById('card-payback').className = 'kpi-card ' + (payback <= 60 ? 'active' : 'warn');
   } else {
-    setKpi('kpi-payback', '> 10 jaar');
-    setKpi('kpi-payback-sub', 'niet terugverdiend in 10j');
+    document.getElementById('kpi-payback').textContent = '> 10 jaar';
+    document.getElementById('kpi-payback-sub').textContent = 'niet terugverdiend';
+    document.getElementById('card-payback').className = 'kpi-card danger';
   }
 
-  const color = (v, a='green', b='red') => v >= 0 ? a : b;
-  document.getElementById('card-payback').className = 'kpi ' + (payback ? (payback <= 60 ? 'green' : 'amber') : 'red');
-  document.getElementById('card-m1').className   = 'kpi ' + color(m1.netto,'blue','red');
-  document.getElementById('card-roi5').className  = 'kpi ' + color(roi5,'amber','red');
-  document.getElementById('card-roi10').className = 'kpi ' + color(roi10,'green','red');
+  document.getElementById('kpi-m1').textContent  = fmtEur(m1.netto);
+  document.getElementById('kpi-roi5').textContent  = fmtPct(roi5);
+  document.getElementById('kpi-roi10').textContent = fmtPct(roi10);
+  document.getElementById('kpi-cum5').textContent  = fmtEur(c60) + ' cumulatief';
+  document.getElementById('kpi-cum10').textContent = fmtEur(c120) + ' cumulatief';
 
-  // Annual aggregation
-  const annual = Array.from({length:10},(_,y)=>{
-    const sl = monthly.slice(y*12,(y+1)*12);
-    const sum = k => sl.reduce((a,r)=>a+r[k],0);
-    return { year:y+1, huur:sum('huur'), laad:sum('laad'), park:sum('park'),
-             rev:sum('rev'), eCost:sum('eCost'), cCost:sum('cCost'),
-             cap:sum('capKostMnd'), costs:sum('costs'),
-             netto:sum('netto'), cum:sl[11].cum,
-             sessAvg:sum('sess')/12 };
-  });
-
-  updateCharts(annual, inv);
-  renderTable(annual);
+  document.getElementById('card-m1').className   = 'kpi-card ' + (m1.netto >= 0 ? 'active' : 'danger');
+  document.getElementById('card-roi5').className  = 'kpi-card ' + (roi5  >= 0 ? 'warn'   : 'danger');
+  document.getElementById('card-roi10').className = 'kpi-card ' + (roi10 >= 0 ? 'active' : 'danger');
+  document.getElementById('kpi-roi5').style.color  = roi5  >= 0 ? '#00FC63' : '#ff6b6b';
+  document.getElementById('kpi-roi10').style.color = roi10 >= 0 ? '#00FC63' : '#ff6b6b';
 }
 
-function updateCharts(annual, inv){
-  const labels = annual.map(a=>`J${a.year}`);
+// ── CHARTS ──
+function renderCharts(annual) {
+  const labels  = annual.map(a => `J${a.year}`);
+  const gridCol = '#1F1F1F';
+  const tickCol = '#555';
+  const tickFmt = v => '€' + fmtNum(Math.round(v / 1000)) + 'k';
+  const baseFonts = { color: tickCol, size: 10 };
 
-  chartCum.data.labels = labels;
-  chartCum.data.datasets[0].data = annual.map(a => a.cum);
-  chartCum.data.datasets[1].data = annual.map(() => 0);
-  chartCum.update('none');
+  if (chartCum) { chartCum.destroy(); chartCum = null; }
+  if (chartRC)  { chartRC.destroy();  chartRC  = null; }
 
-  chartRC.data.labels = labels;
-  chartRC.data.datasets[0].data = annual.map(a =>  a.laad);
-  chartRC.data.datasets[1].data = annual.map(a =>  a.park);
-  chartRC.data.datasets[2].data = annual.map(a => -a.eCost);
-  chartRC.data.datasets[3].data = annual.map(a => -a.cCost);
-  chartRC.data.datasets[4].data = annual.map(a => -a.huur);
-  chartRC.data.datasets[5].data = annual.map(a => -a.cap);
-  chartRC.update('none');
-}
-
-function renderTable(annual){
-  const head = document.getElementById('thead');
-  const body = document.getElementById('tbody');
-  const foot = document.getElementById('tfoot');
-
-  if(view === 'annual'){
-    head.innerHTML = `<tr>
-      <th style="text-align:left">Jaar</th>
-      <th>Sess./mnd</th>
-      <th>Laad-omzet</th>
-      <th>Parking</th>
-      <th>Totaal omzet</th>
-      <th>Energiekost</th>
-      <th>Commissie</th>
-      <th>Huurkost</th>
-      <th>Capaciteits&shy;tarief</th>
-      <th>Totaal kost</th>
-      <th>Netto CF</th>
-      <th>Cumulatief</th>
-    </tr>`;
-    body.innerHTML = annual.map(a=>`<tr>
-      <td>Jaar ${a.year}${a.year<=5?' <small style="color:var(--blue)">h1-5</small>':' <small style="color:var(--muted)">hNa5</small>'}</td>
-      <td>${n1(a.sessAvg)}</td>
-      <td>${€(a.laad)}</td>
-      <td>${€(a.park)}</td>
-      <td><strong>${€(a.rev)}</strong></td>
-      <td class="neg">−${€(a.eCost)}</td>
-      <td class="neg">−${€(a.cCost)}</td>
-      <td class="neg">−${€(a.huur)}</td>
-      <td class="neg">−${€(a.cap)}</td>
-      <td class="neg"><strong>−${€(a.costs)}</strong></td>
-      <td class="${a.netto>=0?'pos':'neg'}">${€(a.netto)}</td>
-      <td class="${a.cum>=0?'cum-pos':'cum-neg'}">${€(a.cum)}</td>
-    </tr>`).join('');
-
-    const tot = k => annual.reduce((s,a)=>s+a[k],0);
-    foot.innerHTML = `<tr>
-      <td>TOTAAL</td><td></td>
-      <td>${€(tot('laad'))}</td>
-      <td>${€(tot('park'))}</td>
-      <td>${€(tot('rev'))}</td>
-      <td>−${€(tot('eCost'))}</td>
-      <td>−${€(tot('cCost'))}</td>
-      <td>−${€(tot('huur'))}</td>
-      <td>−${€(tot('cap'))}</td>
-      <td>−${€(tot('costs'))}</td>
-      <td class="${tot('netto')>=0?'pos':'neg'}">${€(tot('netto'))}</td>
-      <td class="${annual[9].cum>=0?'cum-pos':'cum-neg'}">${€(annual[9].cum)}</td>
-    </tr>`;
-  } else {
-    head.innerHTML = `<tr>
-      <th style="text-align:left">Maand</th>
-      <th>Sessies</th>
-      <th>Laad-omzet</th>
-      <th>Parking</th>
-      <th>Energiekost</th>
-      <th>Commissie</th>
-      <th>Huurkost</th>
-      <th>Capaciteitstarief</th>
-      <th>Netto CF</th>
-      <th>Cumulatief</th>
-    </tr>`;
-    body.innerHTML = monthly.map(r=>`<tr>
-      <td>M${r.m} (J${Math.ceil(r.m/12)})</td>
-      <td>${n1(r.sess)}</td>
-      <td>${€(r.laad)}</td>
-      <td>${€(r.park)}</td>
-      <td class="neg">−${€(r.eCost)}</td>
-      <td class="neg">−${€(r.cCost)}</td>
-      <td class="neg">−${€(r.huur)}</td>
-      <td class="neg">−${€(r.capKostMnd)}</td>
-      <td class="${r.netto>=0?'pos':'neg'}">${€(r.netto)}</td>
-      <td class="${r.cum>=0?'cum-pos':'cum-neg'}">${€(r.cum)}</td>
-    </tr>`).join('');
-    foot.innerHTML = '';
-  }
-}
-
-function switchView(v){
-  view = v;
-  document.getElementById('btn-yr').classList.toggle('active', v==='annual');
-  document.getElementById('btn-mo').classList.toggle('active', v==='monthly');
-  const annual = Array.from({length:10},(_,y)=>{
-    const sl = monthly.slice(y*12,(y+1)*12);
-    const sum = k => sl.reduce((a,r)=>a+r[k],0);
-    return{year:y+1,huur:sum('huur'),laad:sum('laad'),park:sum('park'),
-           rev:sum('rev'),eCost:sum('eCost'),cCost:sum('cCost'),
-           cap:sum('capKostMnd'),costs:sum('costs'),
-           netto:sum('netto'),cum:sl[11].cum,sessAvg:sum('sess')/12};
-  });
-  renderTable(annual);
-}
-
-function initCharts(){
-  const tick = v => '€'+new Intl.NumberFormat('nl-BE').format(Math.round(v/1000))+'k';
-  const base = {
-    responsive:true, maintainAspectRatio:true,
-    animation:{duration:200},
-    plugins:{legend:{position:'bottom',labels:{font:{size:10},boxWidth:10,padding:8}}},
-    scales:{
-      x:{ticks:{font:{size:10}},grid:{color:'#eef2f7'}},
-      y:{ticks:{font:{size:10},callback:tick},grid:{color:'#eef2f7'}}
+  const ctxC = document.getElementById('chartCum').getContext('2d');
+  chartCum = new Chart(ctxC, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [
+        {
+          label: 'Cumulatief',
+          data: annual.map(a => a.cum),
+          borderColor: '#00FC63', backgroundColor: 'rgba(0,252,99,.07)',
+          fill: true, tension: .4, pointRadius: 4, borderWidth: 2,
+          pointBackgroundColor: '#00FC63'
+        },
+        {
+          label: 'Break-even',
+          data: annual.map(() => 0),
+          borderColor: '#ff6b6b', borderDash: [5, 4], borderWidth: 1.5,
+          pointRadius: 0, fill: false
+        }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: true, animation: { duration: 600 },
+      plugins: { legend: { position: 'bottom', labels: { color: '#666', font: { size: 11 }, boxWidth: 12 } } },
+      scales: {
+        x: { ticks: { color: tickCol, font: baseFonts }, grid: { color: gridCol } },
+        y: { ticks: { color: tickCol, font: baseFonts, callback: tickFmt }, grid: { color: gridCol } }
+      }
     }
-  };
-
-  chartCum = new Chart(document.getElementById('chartCum').getContext('2d'),{
-    type:'line',
-    data:{labels:[],datasets:[
-      {label:'Cumulatief',data:[],borderColor:'#27ae60',backgroundColor:'rgba(39,174,96,.08)',fill:true,tension:.4,pointRadius:3,borderWidth:2},
-      {label:'Break-even',data:[],borderColor:'#e74c3c',borderDash:[5,4],borderWidth:1.5,pointRadius:0}
-    ]},
-    options:{...base}
   });
 
-  chartRC = new Chart(document.getElementById('chartRC').getContext('2d'),{
-    type:'bar',
-    data:{labels:[],datasets:[
-      {label:'Laad-omzet',   data:[],backgroundColor:'#27ae60',stack:'rev'},
-      {label:'Parking',      data:[],backgroundColor:'#1abc9c',stack:'rev'},
-      {label:'Energiekost',  data:[],backgroundColor:'#e74c3c',stack:'cost'},
-      {label:'Commissie',    data:[],backgroundColor:'#e67e22',stack:'cost'},
-      {label:'Huurkost',     data:[],backgroundColor:'#9b59b6',stack:'cost'},
-      {label:'Capaciteitst.',data:[],backgroundColor:'#3498db',stack:'cost'},
-    ]},
-    options:{
-      ...base,
-      scales:{
-        x:{stacked:true,ticks:{font:{size:10}},grid:{color:'#eef2f7'}},
-        y:{stacked:true,ticks:{font:{size:10},callback:tick},grid:{color:'#eef2f7'}}
+  const ctxR = document.getElementById('chartRC').getContext('2d');
+  chartRC = new Chart(ctxR, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [
+        { label: 'Laad-omzet',    data: annual.map(a =>  a.laad),    backgroundColor: '#00FC63', stack: 'rev' },
+        { label: 'Parking',       data: annual.map(a =>  a.park),    backgroundColor: '#00b847', stack: 'rev' },
+        { label: 'Energiekost',   data: annual.map(a => -a.eCost),   backgroundColor: '#ff6b6b', stack: 'cost' },
+        { label: 'Commissie',     data: annual.map(a => -a.cCost),   backgroundColor: '#ff9944', stack: 'cost' },
+        { label: 'Huurkost',      data: annual.map(a => -a.huur),    backgroundColor: '#aa44ff', stack: 'cost' },
+        { label: 'Capaciteitst.', data: annual.map(a => -a.capCost), backgroundColor: '#4488ff', stack: 'cost' },
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: true, animation: { duration: 600 },
+      plugins: { legend: { position: 'bottom', labels: { color: '#666', font: { size: 10 }, boxWidth: 10 } } },
+      scales: {
+        x: { stacked: true, ticks: { color: tickCol, font: baseFonts }, grid: { color: gridCol } },
+        y: { stacked: true, ticks: { color: tickCol, font: baseFonts, callback: tickFmt }, grid: { color: gridCol } }
       }
     }
   });
 }
 
-document.addEventListener('DOMContentLoaded',()=>{
-  initCharts();
-  calc();
-  document.querySelectorAll('input').forEach(el=>el.addEventListener('input',calc));
-});
+// ── TABLE ──
+function renderTable(annual) {
+  const thead = document.getElementById('thead');
+  const tbody = document.getElementById('tbody');
+  const tfoot = document.getElementById('tfoot');
+
+  if (view === 'annual') {
+    thead.innerHTML = `<tr>
+      <th style="text-align:left">Jaar</th>
+      <th>Sess./dag</th><th>Laad-omzet</th><th>Parking</th>
+      <th>Totaal omzet</th><th>Energiekost</th><th>Commissie</th>
+      <th>Huurkost</th><th>Capaciteitst.</th><th>Totaal kost</th>
+      <th>Netto CF</th><th>Cumulatief</th>
+    </tr>`;
+    tbody.innerHTML = annual.map(a => {
+      const sessPerDag = a.sessAvg / DAYS_PER_MONTH;
+      return `<tr>
+        <td>Jaar ${a.year}${a.year<=5?' <span style="color:#4488ff;font-size:.65rem">h1-5</span>':' <span style="color:#555;font-size:.65rem">hNa5</span>'}</td>
+        <td>${fmtN1(sessPerDag)}</td>
+        <td>${fmtEur(a.laad)}</td><td>${fmtEur(a.park)}</td>
+        <td><strong style="color:#F0F0F0">${fmtEur(a.rev)}</strong></td>
+        <td class="neg">−${fmtEur(a.eCost)}</td>
+        <td class="neg">−${fmtEur(a.cCost)}</td>
+        <td class="neg">−${fmtEur(a.huur)}</td>
+        <td class="neg">−${fmtEur(a.capCost)}</td>
+        <td class="neg"><strong>−${fmtEur(a.costs)}</strong></td>
+        <td class="${a.netto>=0?'pos':'neg'}">${fmtEur(a.netto)}</td>
+        <td class="${a.cum>=0?'cum-pos':'cum-neg'}">${fmtEur(a.cum)}</td>
+      </tr>`;
+    }).join('');
+    const t = k => annual.reduce((s, a) => s + a[k], 0);
+    tfoot.innerHTML = `<tr>
+      <td>TOTAAL 10j</td><td></td>
+      <td>${fmtEur(t('laad'))}</td><td>${fmtEur(t('park'))}</td>
+      <td>${fmtEur(t('rev'))}</td>
+      <td>−${fmtEur(t('eCost'))}</td><td>−${fmtEur(t('cCost'))}</td>
+      <td>−${fmtEur(t('huur'))}</td><td>−${fmtEur(t('capCost'))}</td>
+      <td>−${fmtEur(t('costs'))}</td>
+      <td class="${t('netto')>=0?'pos':'neg'}">${fmtEur(t('netto'))}</td>
+      <td class="${annual[9].cum>=0?'cum-pos':'cum-neg'}">${fmtEur(annual[9].cum)}</td>
+    </tr>`;
+  } else {
+    thead.innerHTML = `<tr>
+      <th style="text-align:left">Maand</th>
+      <th>Sess./dag</th><th>Laad-omzet</th><th>Parking</th>
+      <th>Energiekost</th><th>Commissie</th><th>Huurkost</th>
+      <th>Capaciteitst.</th><th>Netto CF</th><th>Cumulatief</th>
+    </tr>`;
+    tbody.innerHTML = monthly.map(r => {
+      const spd = r.sess / DAYS_PER_MONTH;
+      return `<tr>
+        <td>M${r.m} (J${Math.ceil(r.m/12)})</td>
+        <td>${fmtN1(spd)}</td>
+        <td>${fmtEur(r.laad)}</td><td>${fmtEur(r.park)}</td>
+        <td class="neg">−${fmtEur(r.eCost)}</td>
+        <td class="neg">−${fmtEur(r.cCost)}</td>
+        <td class="neg">−${fmtEur(r.huur)}</td>
+        <td class="neg">−${fmtEur(r.capCost)}</td>
+        <td class="${r.netto>=0?'pos':'neg'}">${fmtEur(r.netto)}</td>
+        <td class="${r.cum>=0?'cum-pos':'cum-neg'}">${fmtEur(r.cum)}</td>
+      </tr>`;
+    }).join('');
+    tfoot.innerHTML = '';
+  }
+}
+
+function switchView(v) {
+  view = v;
+  document.getElementById('btn-yr').classList.toggle('active', v === 'annual');
+  document.getElementById('btn-mo').classList.toggle('active', v === 'monthly');
+  if (monthly.length === 0) return;
+  const annual = Array.from({ length: 10 }, (_, y) => {
+    const sl = monthly.slice(y * 12, (y + 1) * 12);
+    const sum = k => sl.reduce((a, r) => a + r[k], 0);
+    return { year:y+1, huur:sum('huur'), laad:sum('laad'), park:sum('park'),
+      rev:sum('rev'), eCost:sum('eCost'), cCost:sum('cCost'),
+      capCost:sum('capCost'), costs:sum('costs'),
+      netto:sum('netto'), cum:sl[11].cum, sessAvg:sum('sess')/12 };
+  });
+  renderTable(annual);
+}
+
+// Allow Enter key to trigger calculation
+document.addEventListener('keydown', e => { if (e.key === 'Enter') calculate(); });
 </script>
 </body>
 </html>
