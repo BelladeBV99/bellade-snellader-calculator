@@ -258,7 +258,7 @@
       · Simulatie: 10 jaar (120 maanden)<br><br>
       <strong>Capaciteitstarief (Fluvius 2025):</strong><br>
       · Basiskost = vermogen × €4,1625/kW/mnd<br>
-      · Afvlakking: als energiekost + capaciteit &gt; €0,45/kWh, wordt capaciteit begrensd zodat het gecombineerd gemiddelde op €0,45/kWh blijft
+      · Afvlakking: capaciteitstarief alleen is begrensd op €0,35/kWh — bij weinig sessies wordt het plafond actief
     </div>
 
   </aside>
@@ -323,7 +323,7 @@ const MONTHS         = 120;
 
 // Fluvius 2025 — laagspanning met piekmeting
 const CAP_PER_KW_MND  = 4.1625;   // €/kW/maand
-const CAP_MAX_PER_KWH = 0.45;     // gecombineerd plafond energie + capaciteit (€/kWh)
+const CAP_MAX_PER_KWH = 0.35;     // plafond capaciteitstarief alleen (€/kWh)
 
 let view = 'annual';
 let monthly = [];
@@ -339,19 +339,14 @@ const n1  = v => new Intl.NumberFormat('nl-BE',{minimumFractionDigits:1,maximumF
 
 function g(id){ return parseFloat(document.getElementById(id).value) || 0; }
 
-function calcCapaciteitstarief(verm, sess, aanP) {
+function calcCapaciteitstarief(verm, sess) {
   // Basiskost: vermogen × €4,1625/kW/maand
   const capBase = verm * CAP_PER_KW_MND;
 
-  // Afvlakking: als energiekost + capaciteit > €0,45/kWh,
-  // wordt capaciteit begrensd zodat het gecombineerde gemiddelde op €0,45/kWh blijft
+  // Afvlakking: capaciteitstarief alleen mag max €0,35/kWh bedragen
   const kwhMnd = sess * KWH_PER_SESSIE;
-  if (kwhMnd > 0) {
-    const capPerKwh = capBase / kwhMnd;
-    if (aanP + capPerKwh > CAP_MAX_PER_KWH) {
-      // Begrens capaciteitskost zodat aanP + cap/kWh = 0,45
-      return Math.max(0, (CAP_MAX_PER_KWH - aanP)) * kwhMnd;
-    }
+  if (kwhMnd > 0 && capBase / kwhMnd > CAP_MAX_PER_KWH) {
+    return CAP_MAX_PER_KWH * kwhMnd;
   }
   return capBase;
 }
@@ -378,7 +373,7 @@ function calc(){
     const rev     = laad + park;
     const eCost   = sess * KWH_PER_SESSIE * aanP;
     const cCost   = laad * comm;
-    const capKostMnd = calcCapaciteitstarief(verm, sess, aanP);
+    const capKostMnd = calcCapaciteitstarief(verm, sess);
     const costs   = eCost + cCost + huur + capKostMnd;
     const netto   = rev - costs;
     cum          += netto;
