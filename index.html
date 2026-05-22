@@ -176,6 +176,15 @@
     /* SEPARATOR */
     .sep{height:1px;background:#1F1F1F;border:none}
 
+    /* PDF BUTTON */
+    .pdf-btn{
+      background:transparent;color:#00FC63;
+      border:1px solid rgba(0,252,99,.35);border-radius:8px;
+      padding:6px 14px;font-size:.75rem;font-weight:700;cursor:pointer;
+      transition:all .2s;display:none;
+    }
+    .pdf-btn:hover{background:rgba(0,252,99,.1)}
+
     /* MOBILE */
     @media(max-width:900px){
       .layout{grid-template-columns:1fr}
@@ -188,6 +197,67 @@
       nav{padding:0 16px}
       .results,.sidebar{padding:16px 12px}
     }
+
+    /* PRINT / PDF */
+    @media print{
+      @page{size:A4;margin:14mm 12mm}
+      *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+      body{background:#fff;color:#111}
+      nav{
+        position:relative;background:#fff;border-bottom:2px solid #111;
+        padding:0 12px;margin-bottom:12px;
+      }
+      .nav-logo{background:#00b84a}
+      .nav-badge,.pdf-btn,.calc-btn{display:none!important}
+      .nav-title{color:#111}
+      .nav-sub{color:#555}
+      .layout{display:block}
+      .sidebar{
+        display:block;border:none;padding:0 0 10px;background:#fff;
+        columns:2;column-gap:24px;break-inside:avoid;
+      }
+      .sidebar .sep{break-before:avoid}
+      .section-label{color:#007a30;break-after:avoid}
+      input[type=number],select{
+        background:#f5f5f5;border:1px solid #ccc;color:#111;
+      }
+      .note-box{background:#f5f5f5;border:1px solid #ccc;color:#333}
+      .note-box strong{color:#007a30}
+      .results{padding:0;gap:10px}
+      .kpi-grid{grid-template-columns:repeat(4,1fr);gap:8px}
+      .kpi-card{background:#fff;border:1px solid #ccc;padding:10px}
+      .kpi-card.active{border-color:#00b84a;background:#f0fff5}
+      .kpi-card.warn{border-color:#e08800;background:#fffbf0}
+      .kpi-card.danger{border-color:#cc3333;background:#fff5f5}
+      .kpi-val{font-size:1.3rem}
+      .kpi-card .kpi-val{color:#007a30}
+      .kpi-card.warn .kpi-val{color:#b36b00}
+      .kpi-card.danger .kpi-val{color:#cc3333}
+      .kpi-sub{color:#666}
+      .kpi-label{color:#888}
+      .chart-grid{grid-template-columns:1.5fr 1fr;gap:8px}
+      .chart-card{background:#fff;border:1px solid #ccc;padding:12px}
+      .chart-label{color:#888}
+      .chart-card canvas{max-height:180px}
+      .table-card{background:#fff;border:1px solid #ccc}
+      .table-top{border-bottom:1px solid #ccc;padding:8px 12px}
+      .table-top h3{color:#555}
+      .toggle-wrap{display:none}
+      .tscroll{max-height:none;overflow:visible}
+      table{font-size:.68rem}
+      thead th{background:#f0f0f0;color:#555;border-bottom:1px solid #ccc;position:static}
+      tbody tr:hover{background:transparent}
+      tbody td{color:#333}
+      tbody td:first-child{color:#111}
+      tfoot td{background:#f0f0f0;color:#111}
+      .pos{color:#007a30!important}
+      .neg{color:#cc3333!important}
+      .cum-pos{color:#007a30!important}
+      .cum-neg{color:#cc3333!important}
+      .empty-state{display:none!important}
+      .print-header{display:block!important}
+    }
+    .print-header{display:none}
   </style>
 </head>
 <body>
@@ -200,8 +270,16 @@
       <div class="nav-sub">Bellade Capital — CPO Investeringsanalyse</div>
     </div>
   </div>
-  <div class="nav-badge">Intern gebruik</div>
+  <div style="display:flex;align-items:center;gap:10px">
+    <button class="pdf-btn" id="pdf-btn" onclick="downloadPDF()">⬇ Download PDF</button>
+    <div class="nav-badge">Intern gebruik</div>
+  </div>
 </nav>
+
+<div class="print-header" style="padding:4px 0 10px;border-bottom:1px solid #ccc;margin-bottom:10px;font-size:.75rem;color:#555">
+  <strong style="color:#111">Bellade Capital — Snellader Rendabiliteitsanalyse</strong>
+  &nbsp;·&nbsp; Gegenereerd op <span id="print-date"></span>
+</div>
 
 <div class="layout">
 
@@ -329,7 +407,7 @@
       <div class="empty-sub">Pas de waarden links aan en klik op <strong style="color:#00FC63">Start Calculatie</strong> om de rendabiliteitsberekening te starten.</div>
     </div>
 
-    <div id="output" style="display:none;display:flex;flex-direction:column;gap:16px">
+    <div id="output" style="display:none;flex-direction:column;gap:16px">
 
       <div class="kpi-grid">
         <div class="kpi-card" id="card-payback">
@@ -343,12 +421,12 @@
           <div class="kpi-sub">cashflow startmaand</div>
         </div>
         <div class="kpi-card" id="card-roi5">
-          <div class="kpi-label">Resultaat jaar 5</div>
+          <div class="kpi-label">Gem. jaarl. rendement jaar 5</div>
           <div class="kpi-val" id="kpi-roi5">—</div>
           <div class="kpi-sub" id="kpi-cum5">—</div>
         </div>
         <div class="kpi-card" id="card-roi10">
-          <div class="kpi-label">Resultaat jaar 10</div>
+          <div class="kpi-label">Gem. jaarl. rendement jaar 10</div>
           <div class="kpi-val" id="kpi-roi10">—</div>
           <div class="kpi-sub" id="kpi-cum10">—</div>
         </div>
@@ -473,6 +551,8 @@ function calculate() {
   // Show output
   document.getElementById('empty-state').style.display = 'none';
   document.getElementById('output').style.display = 'flex';
+  document.getElementById('pdf-btn').style.display = 'block';
+  document.getElementById('print-date').textContent = new Date().toLocaleDateString('nl-BE', {day:'2-digit',month:'long',year:'numeric'});
 }
 
 // ── KPIs ──
@@ -480,8 +560,9 @@ function updateKPIs(annual, inv, payback) {
   const m1   = monthly[0];
   const c60  = monthly[59].cum;
   const c120 = monthly[119].cum;
-  const roi5  = inv > 0 ? (c60  / inv) * 100 : 0;
-  const roi10 = inv > 0 ? (c120 / inv) * 100 : 0;
+  // Gemiddeld jaarlijks rendement op geïnvesteerd kapitaal
+  const roi5  = inv > 0 ? (c60  / inv / 5)  * 100 : 0;
+  const roi10 = inv > 0 ? (c120 / inv / 10) * 100 : 0;
 
   // Payback
   if (payback) {
@@ -657,6 +738,13 @@ function switchView(v) {
       netto:sum('netto'), cum:sl[11].cum, sessAvg:sum('sess')/12 };
   });
   renderTable(annual);
+}
+
+// ── PDF DOWNLOAD ──
+function downloadPDF() {
+  // Ensure annual view for print (most compact)
+  if (view !== 'annual') switchView('annual');
+  window.print();
 }
 
 // Allow Enter key to trigger calculation
