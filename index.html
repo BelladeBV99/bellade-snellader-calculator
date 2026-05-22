@@ -200,158 +200,258 @@
 
     /* "Totaal omzet" highlighted op scherm */
     .rev-total{color:#F0F0F0;font-weight:700}
-
-    /* Kolommen die alleen in scherm-view zichtbaar zijn */
+    /* Kolommen verborgen in print */
     .ph{}
+    /* Chart images (voor print, hidden op scherm) */
+    .print-chart-img{display:none;width:100%;height:auto;border-radius:4px}
+    .print-hide-canvas{}
 
-    /* PRINT / PDF */
+    /* ═══════════════════════════════════════════
+       PRINT / PDF  —  Bellade Capital Report
+    ═══════════════════════════════════════════ */
     @media print{
-      @page{size:A4 landscape;margin:25mm 10mm 12mm}
-      *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
-      body{background:#fff!important;color:#111!important}
+      @page{size:A4 landscape;margin:9mm 9mm 9mm}
+      *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;box-sizing:border-box}
+      body{background:#fff!important;color:#111!important;margin:0;padding:0}
 
-      /* ── Vaste logo-header op elke pagina ── */
+      /* ── Alles verbergen wat niet in het rapport hoort ── */
+      nav,
+      .sidebar,
+      .nav-badge,.pdf-btn,.calc-btn,.toggle-wrap,
+      .empty-state,.print-header{display:none!important}
+
+      .layout{display:block!important}
+      .results{
+        padding:0!important;overflow:visible!important;
+        display:block!important;gap:0!important;
+      }
+      #output{display:block!important;gap:0!important}
+
+      /* ── Print-only: canvas → ── */
+      .print-chart-img{display:block!important}
+      .print-hide-canvas{display:none!important}
+
+      /* ── Print-only: kolommen verbergen ── */
+      .ph{display:none!important}
+
+      /* ══════════════════════════════════════
+         HEADER — Logo bovenaan, normale flow
+      ══════════════════════════════════════ */
       .print-page-header{
         display:flex!important;
-        position:fixed;top:0;left:0;right:0;height:19mm;
-        background:#fff;border-bottom:2.5px solid #111;
-        align-items:center;padding:0 10mm;gap:16px;z-index:1000;
+        position:static!important;          /* GEEN fixed — gewone documentflow */
+        flex-direction:row;
+        align-items:center;
+        justify-content:space-between;
+        padding:0 0 8px 0;
+        margin-bottom:8px;
+        border-bottom:3px solid #111;
       }
-      .print-logo-img{height:12mm;width:auto}
+      .print-header-left{display:flex;align-items:center;gap:12px}
+      .print-logo-img{height:30px;width:auto}
       .print-header-text{display:flex;flex-direction:column;gap:1px}
-      .print-header-text strong{font-size:.82rem;color:#111;font-weight:800;letter-spacing:-.2px}
-      .print-header-text span{font-size:.68rem;color:#555}
-
-      /* Navigatie + sidebar verbergen */
-      nav{display:none!important}
-      .nav-badge,.pdf-btn,.calc-btn,.toggle-wrap{display:none!important}
-      .sidebar{display:none!important}
-      .layout{display:block!important}
-      .results{padding:0!important;gap:8px!important;overflow:visible!important}
-
-      /* ── Parameterrij ── */
-      .print-params-row{
-        display:flex!important;flex-wrap:wrap;gap:3px 16px;
-        padding:6px 10px;font-size:.62rem;color:#333;
-        background:#f8f8f8;border:1px solid #ddd;border-radius:5px;
-        margin-bottom:6px;
+      .print-header-text strong{
+        font-size:11.5pt;font-weight:900;color:#111;
+        letter-spacing:-.3px;line-height:1.2;
       }
-      .print-params-row span b{color:#111;font-weight:700}
+      .print-header-text span{font-size:8pt;color:#555;font-weight:400}
+      .print-header-badge{
+        font-size:7.5pt;font-weight:700;color:#fff;
+        background:#111;border-radius:3px;
+        padding:2px 7px;letter-spacing:.04em;text-transform:uppercase;
+        align-self:center;white-space:nowrap;
+      }
 
-      /* ── KPI kaarten ── */
-      .kpi-grid{display:grid!important;grid-template-columns:repeat(4,1fr)!important;gap:7px!important}
+      /* ══════════════════════════════════════
+         PARAMETERS — compacte samenvattingsrij
+      ══════════════════════════════════════ */
+      .print-params-row{
+        display:flex!important;
+        flex-wrap:wrap;gap:0;
+        margin-bottom:8px;
+        border:1.5px solid #e0e0e0;
+        border-radius:5px;
+        overflow:hidden;
+      }
+      .print-params-row span{
+        font-size:7.5pt;color:#333;
+        padding:4px 10px;
+        border-right:1px solid #e8e8e8;
+        white-space:nowrap;
+        background:#f9f9f9;
+      }
+      .print-params-row span:last-child{border-right:none}
+      .print-params-row span b{color:#111;font-weight:800}
+
+      /* ══════════════════════════════════════
+         KPI KAARTEN — 4 kolommen
+      ══════════════════════════════════════ */
+      .kpi-grid{
+        display:grid!important;
+        grid-template-columns:repeat(4,1fr)!important;
+        gap:7px!important;
+        margin-bottom:8px!important;
+      }
       .kpi-card{
-        background:#fff!important;border:1.5px solid #ddd!important;
-        border-radius:8px!important;padding:10px 12px!important;
+        background:#fff!important;
+        border:1.5px solid #ddd!important;
+        border-left:4px solid #ccc!important;
+        border-radius:5px!important;
+        padding:9px 11px!important;
         break-inside:avoid;
       }
-      .kpi-card.active{border-color:#00a83a!important;background:#f0fff5!important}
-      .kpi-card.warn  {border-color:#d47700!important;background:#fffbf0!important}
-      .kpi-card.danger{border-color:#c0392b!important;background:#fff5f5!important}
-      .kpi-label{font-size:.58rem!important;color:#888!important;margin-bottom:6px!important}
-      .kpi-val{font-size:1.25rem!important}
+      .kpi-card.active{border-left-color:#00a83a!important;background:#f5fffb!important}
+      .kpi-card.warn  {border-left-color:#d47700!important;background:#fffaf2!important}
+      .kpi-card.danger{border-left-color:#c0392b!important;background:#fff6f6!important}
+      .kpi-label{
+        font-size:6.5pt!important;font-weight:800!important;
+        text-transform:uppercase!important;letter-spacing:.08em!important;
+        color:#888!important;margin-bottom:5px!important;line-height:1.3!important;
+      }
+      .kpi-val{
+        font-size:20pt!important;font-weight:900!important;
+        line-height:1.05!important;letter-spacing:-.5px!important;
+      }
       .kpi-card      .kpi-val{color:#007a30!important}
       .kpi-card.warn .kpi-val{color:#a05900!important}
       .kpi-card.danger .kpi-val{color:#c0392b!important}
-      .kpi-sub{font-size:.6rem!important;color:#666!important;margin-top:4px!important}
-
-      /* ── Grafieken: flex zodat beide naast elkaar staan ── */
-      .chart-grid{
-        display:flex!important;flex-direction:row!important;
-        gap:8px!important;break-inside:avoid;
+      .kpi-sub{
+        font-size:7pt!important;color:#555!important;
+        margin-top:4px!important;line-height:1.4!important;
       }
-      .chart-grid .chart-card{flex:1;min-width:0}
-      .chart-grid .chart-card:first-child{flex:1.6}
-      .chart-card{
-        background:#fff!important;border:1.5px solid #ddd!important;
-        border-radius:8px!important;padding:10px 12px!important;
+
+      /* ══════════════════════════════════════
+         GRAFIEKEN — PNG-images naast elkaar
+      ══════════════════════════════════════ */
+      .chart-grid{
+        display:flex!important;
+        flex-direction:row!important;
+        gap:8px!important;
+        margin-bottom:8px!important;
         break-inside:avoid;
       }
-      .chart-label{color:#666!important;font-size:.6rem!important;margin-bottom:10px!important}
-      .chart-card canvas{
-        width:100%!important;max-width:100%!important;
-        height:140px!important;max-height:140px!important;
+      .chart-grid .chart-card{flex:1;min-width:0}
+      .chart-grid .chart-card:first-child{flex:1.55}
+      .chart-card{
+        background:#fff!important;
+        border:1.5px solid #e0e0e0!important;
+        border-radius:5px!important;
+        padding:8px 10px!important;
+        break-inside:avoid;
+        overflow:hidden;
+      }
+      .chart-label{
+        font-size:6.5pt!important;font-weight:800!important;
+        text-transform:uppercase!important;letter-spacing:.07em!important;
+        color:#888!important;margin-bottom:6px!important;
+      }
+      /* Canvas verborgen, img zichtbaar */
+      .chart-card canvas{display:none!important}
+      .print-chart-img{
+        display:block!important;
+        width:100%!important;height:auto!important;
+        max-height:110px!important;object-fit:contain;
+        border-radius:3px;
       }
 
-      /* ── Detailberekening tabel ── */
+      /* ══════════════════════════════════════
+         DETAILBEREKENING TABEL
+      ══════════════════════════════════════ */
       .table-card{
-        background:#fff!important;border:1.5px solid #ddd!important;
-        border-radius:8px!important;margin-top:6px!important;
-        break-inside:auto;page-break-inside:auto;
+        background:#fff!important;
+        border:1.5px solid #e0e0e0!important;
+        border-radius:5px!important;
+        overflow:hidden;break-inside:auto;page-break-inside:auto;
       }
       .table-top{
-        padding:7px 10px!important;border-bottom:1.5px solid #ddd!important;
-        background:#f8f8f8!important;border-radius:8px 8px 0 0;
+        display:flex!important;
+        align-items:baseline!important;
+        gap:8px!important;
+        padding:8px 11px 7px!important;
+        border-bottom:2px solid #111!important;
+        background:#f9f9f9!important;
       }
-      .table-top h3{color:#333!important;font-size:.68rem!important;font-weight:800!important;letter-spacing:.04em!important}
-
-      /* Scroll volledig verwijderen */
+      .table-top h3{
+        font-size:8pt!important;font-weight:900!important;
+        text-transform:uppercase!important;letter-spacing:.07em!important;
+        color:#111!important;
+      }
+      .table-top-sub{
+        display:inline!important;
+        font-size:7pt!important;color:#888!important;font-weight:400!important;
+      }
       .tscroll{
         max-height:none!important;height:auto!important;
-        overflow:visible!important;overflow-x:visible!important;overflow-y:visible!important;
-        display:block!important;
+        overflow:visible!important;overflow-x:visible!important;
+        overflow-y:visible!important;display:block!important;
       }
-
-      /* Kolommen verbergen die te breed maken (laad, opstart, parking, commissie, capaciteit) */
-      .ph{display:none!important}
-
-      /* Tabel opmaak */
       table{
-        font-size:.64rem!important;width:100%!important;
+        font-size:7pt!important;width:100%!important;
         border-collapse:collapse!important;table-layout:auto!important;
       }
       thead{display:table-header-group!important}
       thead th{
-        background:#1e1e1e!important;color:#fff!important;
-        padding:6px 8px!important;
+        background:#111!important;color:#fff!important;
+        padding:5px 9px!important;
         text-align:right!important;vertical-align:bottom!important;
-        font-size:.6rem!important;font-weight:700!important;
-        text-transform:uppercase!important;letter-spacing:.04em!important;
+        font-size:6.5pt!important;font-weight:700!important;
+        text-transform:uppercase!important;letter-spacing:.05em!important;
         white-space:nowrap!important;position:static!important;
-        border:none!important;border-right:1px solid #333!important;
+        border-right:1px solid #333!important;
       }
-      thead th:first-child{text-align:left!important;border-right:2px solid #00a83a!important}
+      thead th:first-child{
+        text-align:left!important;
+        border-right:3px solid #00a83a!important;
+        min-width:70px!important;
+      }
       thead th:last-child{border-right:none!important}
 
-      tbody tr:nth-child(even){background:#f6f6f6!important}
+      tbody tr:nth-child(even){background:#f7f7f7!important}
       tbody tr:nth-child(odd) {background:#fff!important}
       tbody tr:hover{background:transparent!important}
-      tbody tr{border-bottom:1px solid #eee!important}
+      tbody tr{border-bottom:1px solid #ebebeb!important}
 
       tbody td{
-        padding:5px 8px!important;text-align:right!important;
+        padding:5px 9px!important;
+        text-align:right!important;
         color:#222!important;white-space:nowrap!important;
-        font-size:.64rem!important;
-        border-right:1px solid #eee!important;
+        font-size:7pt!important;
+        border-right:1px solid #ebebeb!important;
       }
       tbody td:first-child{
         text-align:left!important;font-weight:700!important;
-        color:#111!important;border-right:2px solid #00a83a!important;
+        color:#111!important;
+        border-right:3px solid #e8e8e8!important;
       }
-      tbody td:last-child{border-right:none!important}
+      tbody td:last-child{border-right:none!important;font-weight:700!important}
 
       tfoot tr{border-top:2px solid #111!important}
       tfoot td{
-        background:#1e1e1e!important;color:#fff!important;
-        padding:6px 8px!important;font-weight:800!important;
-        font-size:.64rem!important;text-align:right!important;
+        background:#111!important;color:#fff!important;
+        padding:6px 9px!important;font-weight:800!important;
+        font-size:7pt!important;text-align:right!important;
         white-space:nowrap!important;
-        border-right:1px solid #444!important;
+        border-right:1px solid #333!important;
       }
-      tfoot td:first-child{text-align:left!important;border-right:2px solid #00a83a!important}
+      tfoot td:first-child{
+        text-align:left!important;
+        border-right:3px solid #00a83a!important;
+      }
       tfoot td:last-child{border-right:none!important}
 
-      /* Kleuren overriden voor print */
-      .rev-total{color:#111!important;font-weight:800!important}
-      .pos{color:#007a30!important;font-weight:800!important}
-      .neg{color:#c0392b!important;font-weight:600!important}
-      .cum-pos{color:#007a30!important;font-weight:800!important}
-      .cum-neg{color:#c0392b!important;font-weight:800!important}
-      .empty-state{display:none!important}
+      /* Kleurcodes voor print */
+      .rev-total{color:#005f22!important;font-weight:800!important}
+      .pos{color:#006825!important;font-weight:800!important}
+      .neg{color:#b52a20!important;font-weight:600!important}
+      .cum-pos{color:#006825!important;font-weight:800!important}
+      .cum-neg{color:#b52a20!important;font-weight:800!important}
     }
+
+    /* Standaard verborgen op scherm */
     .print-page-header{display:none}
     .print-params-row{display:none}
     .print-header{display:none}
+    .table-top-sub{display:none}
   </style>
 </head>
 <body>
@@ -371,11 +471,14 @@
 </nav>
 
 <div class="print-page-header">
-  <img src="bellade-logo-dark.png" alt="Bellade" class="print-logo-img"/>
-  <div class="print-header-text">
-    <strong>Snellader Rendabiliteitsberekening — Bellade Capital</strong>
-    <span>Gegenereerd op <span id="print-date"></span></span>
+  <div class="print-header-left">
+    <img src="bellade-logo-dark.png" alt="Bellade" class="print-logo-img"/>
+    <div class="print-header-text">
+      <strong>Snellader Rendabiliteitsberekening</strong>
+      <span>Bellade Capital — CPO Investeringsanalyse &nbsp;·&nbsp; Gegenereerd op <span id="print-date"></span></span>
+    </div>
   </div>
+  <div class="print-header-badge">Intern gebruik</div>
 </div>
 
 <div class="layout">
@@ -510,22 +613,22 @@
 
       <div class="kpi-grid">
         <div class="kpi-card" id="card-payback">
-          <div class="kpi-label">Terugverdientijd</div>
+          <div class="kpi-label">Terugverdientijd investering</div>
           <div class="kpi-val" id="kpi-payback">—</div>
           <div class="kpi-sub" id="kpi-payback-sub">—</div>
         </div>
         <div class="kpi-card" id="card-m1">
-          <div class="kpi-label">Netto maand 1</div>
+          <div class="kpi-label">Netto cashflow — maand 1</div>
           <div class="kpi-val" id="kpi-m1">—</div>
-          <div class="kpi-sub">cashflow startmaand</div>
+          <div class="kpi-sub">netto resultaat eerste exploitatiemaand</div>
         </div>
         <div class="kpi-card" id="card-roi5">
-          <div class="kpi-label">Gem. jaarl. rendement jaar 5</div>
+          <div class="kpi-label">Gemiddeld jaarl. rendement op 5 jaar</div>
           <div class="kpi-val" id="kpi-roi5">—</div>
           <div class="kpi-sub" id="kpi-cum5">—</div>
         </div>
         <div class="kpi-card" id="card-roi10">
-          <div class="kpi-label">Gem. jaarl. rendement jaar 10</div>
+          <div class="kpi-label">Gemiddeld jaarl. rendement op 10 jaar</div>
           <div class="kpi-val" id="kpi-roi10">—</div>
           <div class="kpi-sub" id="kpi-cum10">—</div>
         </div>
@@ -533,18 +636,19 @@
 
       <div class="chart-grid">
         <div class="chart-card">
-          <div class="chart-label">Cumulatief cashflow — 10 jaar</div>
+          <div class="chart-label">Cumulatieve netto cashflow — 10 jaar</div>
           <canvas id="chartCum"></canvas>
         </div>
         <div class="chart-card">
-          <div class="chart-label">Jaarlijkse opbrengst vs kosten</div>
+          <div class="chart-label">Jaarlijkse opbrengst vs. kosten (gestapeld)</div>
           <canvas id="chartRC"></canvas>
         </div>
       </div>
 
       <div class="table-card">
         <div class="table-top">
-          <h3>Detailberekening</h3>
+          <h3>Jaarlijkse detailanalyse</h3>
+          <span class="table-top-sub" id="table-top-sub"></span>
           <div class="toggle-wrap">
             <button class="toggle-btn active" id="btn-yr" onclick="switchView('annual')">Per jaar</button>
             <button class="toggle-btn" id="btn-mo" onclick="switchView('monthly')">Per maand</button>
@@ -647,19 +751,23 @@ function calculate() {
   renderCharts(annual);
   renderTable(annual);
 
-  // Compact parameter row for print
+  // Parameterrij voor print
   document.getElementById('print-params-row').innerHTML = [
     `<span><b>Investering:</b> ${fmtEur(inv)}</span>`,
-    `<span><b>Huur j1–5:</b> € ${h1_5}/mnd</span>`,
-    `<span><b>Na 5j:</b> € ${hNa5}/mnd</span>`,
+    `<span><b>Huurkost j1–5:</b> € ${h1_5}/mnd</span>`,
+    `<span><b>Huurkost na 5j:</b> € ${hNa5}/mnd</span>`,
     `<span><b>Vermogen:</b> ${verm} kW</span>`,
     `<span><b>Verkoopprijs:</b> € ${kwhP}/kWh</span>`,
     `<span><b>Aankoopprijs:</b> € ${aanP}/kWh</span>`,
-    `<span><b>Opstart:</b> € ${opst}/sessie</span>`,
-    `<span><b>Sessies/dag:</b> ${sd}</span>`,
-    `<span><b>Groei:</b> ${g('groei')} %/mnd</span>`,
-    `<span><b>Commissie:</b> ${g('commissie')} %</span>`,
+    `<span><b>Opstartkost:</b> € ${opst}/sessie</span>`,
+    `<span><b>Sessies/dag (start):</b> ${sd}</span>`,
+    `<span><b>Maandgroei sessies:</b> ${g('groei')} %</span>`,
+    `<span><b>Commissie locatie:</b> ${g('commissie')} %</span>`,
   ].join('');
+
+  // Tabelsubtitel
+  const tSub = document.getElementById('table-top-sub');
+  if (tSub) tSub.textContent = `39 kWh/sessie · 120 maanden simulatie · Fluvius capaciteitstarief 2025`;
 
   // Show output
   document.getElementById('empty-state').style.display = 'none';
@@ -867,20 +975,43 @@ function switchView(v) {
 
 // ── PDF DOWNLOAD ──
 function downloadPDF() {
-  // Ensure annual view for print (most compact)
   if (view !== 'annual') switchView('annual');
-  window.print();
+  snapshotChartsForPrint();
+  setTimeout(() => window.print(), 120);
 }
 
 // Allow Enter key to trigger calculation
 document.addEventListener('keydown', e => { if (e.key === 'Enter') calculate(); });
 
-// Ensure charts render correctly before printing
+// ── PRINT: canvas → PNG image voor betrouwbare PDF-rendering ──
+function snapshotChartsForPrint() {
+  [
+    { chart: chartCum, canvasId: 'chartCum' },
+    { chart: chartRC,  canvasId: 'chartRC'  },
+  ].forEach(({ chart, canvasId }) => {
+    if (!chart) return;
+    const canvas = document.getElementById(canvasId);
+    const card   = canvas.closest('.chart-card');
+    // Verwijder vorige snapshot als die al bestaat
+    card.querySelectorAll('.print-chart-img').forEach(el => el.remove());
+    // Maak PNG snapshot
+    const img = document.createElement('img');
+    img.className = 'print-chart-img';
+    img.src = canvas.toDataURL('image/png', 1.0);
+    card.appendChild(img);
+  });
+}
+
+function restoreChartsAfterPrint() {
+  document.querySelectorAll('.print-chart-img').forEach(el => el.remove());
+}
+
 window.addEventListener('beforeprint', () => {
   if (view !== 'annual') switchView('annual');
-  if (chartCum) chartCum.resize();
-  if (chartRC)  chartRC.resize();
+  snapshotChartsForPrint();
 });
+
+window.addEventListener('afterprint', restoreChartsAfterPrint);
 </script>
 </body>
 </html>
