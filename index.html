@@ -202,6 +202,9 @@
     .rev-total{color:#F0F0F0;font-weight:700}
     /* Kolommen verborgen in print */
     .ph{}
+    /* Dubbele labels: scherm vs. print */
+    .screen-only{display:inline}
+    .print-only{display:none}
     /* Chart images (voor print, hidden op scherm) */
     .print-chart-img{display:none;width:100%;height:auto;border-radius:4px}
     .print-hide-canvas{}
@@ -233,6 +236,8 @@
 
       /* ── Print-only: kolommen verbergen ── */
       .ph{display:none!important}
+      .screen-only{display:none!important}
+      .print-only{display:inline!important}
 
       /* ══════════════════════════════════════
          HEADER — Logo bovenaan, normale flow
@@ -517,7 +522,7 @@
     <hr class="sep"/>
 
     <div>
-      <div class="section-label">Huurkost locatie</div>
+      <div class="section-label">Operationele kost</div>
       <div class="field-row">
         <div class="field">
           <label>Jaar 1–5 <span class="unit">€/mnd</span></label>
@@ -771,8 +776,8 @@ function calculate() {
   // Parameterrij voor print
   document.getElementById('print-params-row').innerHTML = [
     `<span><b>Investering:</b> ${fmtEur(inv)}</span>`,
-    `<span><b>Huurkost j1–5:</b> € ${h1_5}/mnd</span>`,
-    `<span><b>Huurkost na 5j:</b> € ${hNa5}/mnd</span>`,
+    `<span><b>Operationele kost j1–5:</b> € ${h1_5}/mnd</span>`,
+    `<span><b>Operationele kost na 5j:</b> € ${hNa5}/mnd</span>`,
     `<span><b>Vermogen:</b> ${verm} kW</span>`,
     `<span><b>Verkoopprijs:</b> € ${kwhP}/kWh</span>`,
     `<span><b>Aankoopprijs:</b> € ${aanP}/kWh</span>`,
@@ -880,7 +885,7 @@ function renderCharts(annual) {
         { label: 'Parking',       data: annual.map(a =>  a.park),    backgroundColor: '#00b847', stack: 'rev' },
         { label: 'Energiekost',   data: annual.map(a => -a.eCost),   backgroundColor: '#ff6b6b', stack: 'cost' },
         { label: 'Commissie',     data: annual.map(a => -a.cCost),   backgroundColor: '#ff9944', stack: 'cost' },
-        { label: 'Huurkost',      data: annual.map(a => -a.huur),    backgroundColor: '#aa44ff', stack: 'cost' },
+        { label: 'Operationele kost',      data: annual.map(a => -a.huur),    backgroundColor: '#aa44ff', stack: 'cost' },
         { label: 'Capaciteitst.', data: annual.map(a => -a.capCost), backgroundColor: '#4488ff', stack: 'cost' },
       ]
     },
@@ -906,9 +911,9 @@ function renderTable(annual) {
       <th style="text-align:left">Jaar</th>
       <th>Sess./dag</th>
       <th class="ph">Laad-omzet</th><th class="ph">Opstartkost</th><th class="ph">Parking</th>
-      <th>Totaal omzet</th><th>Energiekost</th>
+      <th>Totaal omzet</th><th><span class="screen-only">Energiekost</span><span class="print-only">Energie &amp; Capaciteit</span></th>
       <th class="ph">Commissie</th>
-      <th>Huurkost</th>
+      <th>Operationele kost</th>
       <th class="ph">Capaciteitst.</th>
       <th>Totaal kost</th><th>Netto CF</th><th>Cumulatief</th>
     </tr>`;
@@ -924,7 +929,7 @@ function renderTable(annual) {
         <td class="ph">${fmtEur(a.opstOmz)}</td>
         <td class="ph">${fmtEur(a.park)}</td>
         <td><strong class="rev-total">${fmtEur(a.rev)}</strong></td>
-        <td class="neg">−${fmtEur(a.eCost)}</td>
+        <td class="neg"><span class="screen-only">−${fmtEur(a.eCost)}</span><span class="print-only">−${fmtEur(a.eCost + a.capCost)}</span></td>
         <td class="ph neg">−${fmtEur(a.cCost)}</td>
         <td class="neg">−${fmtEur(a.huur)}</td>
         <td class="ph neg">−${fmtEur(a.capCost)}</td>
@@ -952,7 +957,7 @@ function renderTable(annual) {
     thead.innerHTML = `<tr>
       <th style="text-align:left">Maand</th>
       <th>Sess./dag</th><th>Laad-omzet</th><th>Opstartkost</th><th>Parking</th>
-      <th>Energiekost</th><th>Commissie</th><th>Huurkost</th>
+      <th>Energiekost</th><th>Commissie</th><th>Operationele kost</th>
       <th>Capaciteitst.</th><th>Netto CF</th><th>Cumulatief</th>
     </tr>`;
     tbody.innerHTML = monthly.map(r => {
